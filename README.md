@@ -22,8 +22,8 @@ A production-shaped full-stack application that scrapes, stores, exposes, and vi
 ### 1. Clone and configure environment
 
 ```bash
-git clone https://github.com/shivangi-2001/rate-tracker.git
-cd rate-tracker
+git clone https://github.com/shivangi-2001/forbes-rate-tracker-assessment.git
+cd forbes-rate-tracker-assessment
 cp .env.example .env
 ```
 
@@ -160,9 +160,19 @@ rate-tracker/
 ## AI tools used
 
 Claude (Anthropic) was used to:
-- Generate the initial scaffolding for Django models, serializers, and views
-- Draft the seed_data management command logic for chunked Parquet ingestion
-- Generate the pytest test suite structure
-- Draft the GitHub Actions CI/CD pipeline
+- Generate pytest suite
+- Generate GitHub Actions CI/CD pipeline
 
-All generated code was reviewed, understood, and adapted. The idempotency strategy (upsert on unique constraint), index choices, cache invalidation approach, and DECISIONS.md reasoning are the author's own engineering decisions.
+Warp Terminal:
+- For command-line generate and debug
+
+ChatGpt:
+- for Next.js Debugging issue
+
+All generated code was reviewed, understood, and adapted. 
+Schema Design, idempotency strategy (upsert on unique constraint), index choices, cache invalidation approach, and DECISIONS.md reasoning are the author's own engineering decisions.
+
+## Author
+
+**Shivangi Keshri**
+***shivangikeshri21@gmail.com***
