@@ -1,0 +1,201 @@
+.section { margin-bottom: 2.5rem; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.heading { font-size: 1.1rem; font-weight: 600; margin: 0; }
+
+.controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+.select {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: #fff;
+  color: #111;
+}
+
+.refreshBtn {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid #6366f1;
+  border-radius: 6px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.refreshBtn:hover { background: #4f46e5; }
+
+.timestamp { font-size: 0.75rem; color: #6b7280; margin: 0 0 0.75rem; }
+
+/* ── Loading skeleton ── */
+.loadingState {
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+}
+.skeletonRow {
+  height: 14px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+.skeletonRow:last-child { margin-bottom: 0; width: 60%; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* ── Error state ── */
+.errorState {
+  padding: 1.25rem 1.5rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #991b1b;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.errorTitle { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+.errorMessage { color: #b91c1c; margin-bottom: 0.75rem; word-break: break-word; }
+.retryBtn {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid #b91c1c;
+  border-radius: 6px;
+  background: transparent;
+  color: #b91c1c;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.retryBtn:hover { background: #fecaca; }
+
+.emptyState {
+  padding: 2.5rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  border: 1px dashed #e5e7eb;
+  border-radius: 10px;
+}
+
+/* ── Table ── */
+.tableWrapper { overflow-x: auto; border: 1px solid #e5e7eb; border-radius: 10px; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.th {
+  padding: 0.65rem 0.875rem;
+  text-align: left;
+  font-weight: 600;
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  color: #374151;
+}
+.th:hover { background: #f3f4f6; }
+
+.sortArrow { color: #9ca3af; font-size: 0.75rem; margin-left: 0.25rem; }
+
+.row:hover { background: #f9fafb; }
+.row:last-child td { border-bottom: none; }
+
+.td, .tdNum {
+  padding: 0.65rem 0.875rem;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: middle;
+  color: #111827;
+}
+.tdNum { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background: #ede9fe;
+  color: #5b21b6;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .toolbar { flex-direction: column; align-items: flex-start; }
+  .th, .td, .tdNum { padding: 0.5rem 0.625rem; font-size: 0.8rem; }
+}
+
+/* ── Pagination ── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.875rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.pageInfo { flex: 1; min-width: 140px; }
+
+.pageControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pageBtn {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  color: #374151;
+  font-size: 0.875rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s;
+}
+.pageBtn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageIndicator {
+  padding: 0 0.5rem;
+  white-space: nowrap;
+  color: #374151;
+  font-size: 0.8rem;
+}
+
+.pageSizeControl {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pageSizeLabel {
+  font-size: 0.8rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .pagination { flex-direction: column; align-items: flex-start; }
+  .pageControls { flex-wrap: wrap; }
+}

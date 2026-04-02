@@ -1,0 +1,41 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.2rem;
+}
+
+.liveBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #16a34a;
+  background: #dcfce7;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  letter-spacing: 0.05em;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@media (max-width: 480px) {
+  .title { font-size: 1.25rem; }
+  .liveBadge { font-size: 0.65rem; padding: 0.2rem 0.5rem; }
+}

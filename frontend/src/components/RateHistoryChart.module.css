@@ -1,0 +1,131 @@
+.section { margin-bottom: 2.5rem; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.heading { font-size: 1.1rem; font-weight: 600; margin: 0; }
+
+.controls { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+
+.select {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: #fff;
+  color: #111;
+}
+.select:disabled { opacity: 0.5; }
+
+.refreshBtn {
+  padding: 0.35rem 0.8rem;
+  border: 1px solid #6366f1;
+  border-radius: 6px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.refreshBtn:hover:not(:disabled) { background: #4f46e5; }
+.refreshBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.timestamp { font-size: 0.75rem; color: #6b7280; margin: 0 0 0.75rem; }
+
+/* ── Skeleton loading state ── */
+.loadingState {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.25rem;
+  background: #fff;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0;
+}
+
+.skeletonChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 260px;
+  padding: 0 8px;
+}
+
+.skeletonBar {
+  flex: 1;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 3px 3px 0 0;
+}
+
+.skeletonLabel {
+  height: 12px;
+  width: 40%;
+  margin: 12px auto 0;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Error state — full block, not overlaid ── */
+.errorState {
+  padding: 1.25rem 1.5rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: #991b1b;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.errorTitle { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+.errorMessage { color: #b91c1c; margin-bottom: 0.75rem; word-break: break-word; }
+.retryBtn {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid #b91c1c;
+  border-radius: 6px;
+  background: transparent;
+  color: #b91c1c;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.retryBtn:hover { background: #fecaca; }
+
+/* ── Empty state ── */
+.emptyState {
+  padding: 2.5rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  border: 1px dashed #e5e7eb;
+  border-radius: 10px;
+}
+
+/* ── Chart wrapper ── */
+.chartArea {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  background: #fff;
+}
+
+@media (max-width: 600px) {
+  .toolbar { flex-direction: column; align-items: flex-start; }
+  .chartArea { padding: 0.5rem; }
+  .loadingState { height: 240px; }
+  .skeletonChart { height: 180px; }
+}

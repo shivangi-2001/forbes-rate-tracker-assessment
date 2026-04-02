@@ -1,0 +1,208 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION:   "20"
+
+jobs:
+  # ── 1. Lint ────────────────────────────────────────────────────────────────
+  lint-backend:
+    name: Lint · Backend (ruff)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Run ruff check
+        run: ruff check .
+
+  lint-frontend:
+    name: Lint · Frontend (ESLint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  # ── 2. Backend tests ───────────────────────────────────────────────────────
+  test-backend:
+    name: Test · Backend (pytest-django)
+    runs-on: ubuntu-latest
+    needs: lint-backend
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: rates
+          POSTGRES_PASSWORD: rates
+          POSTGRES_DB: rates_db
+        options: >-
+          --health-cmd "pg_isready -U rates"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      SECRET_KEY:       ci-test-secret-key-not-for-production
+      DATABASE_URL:     postgres://rates:rates@localhost:5432/rates_db
+      REDIS_URL:        redis://localhost:6379/0
+      INGEST_API_KEY:   ci-test-ingest-key
+      DEBUG:            "True"
+      ALLOWED_HOSTS:    localhost,127.0.0.1
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      DJANGO_SETTINGS_MODULE: config.settings
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run migrations
+        run: python manage.py migrate --noinput
+
+      - name: Run pytest
+        run: pytest --tb=short -q
+
+      - name: Upload coverage (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: backend/.pytest_cache/
+
+  # ── 3. Frontend build check ────────────────────────────────────────────────
+  build-frontend:
+    name: Build · Frontend (Next.js)
+    runs-on: ubuntu-latest
+    needs: lint-frontend
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build Next.js app
+        run: npm run build
+
+  # ── 4. Docker Compose smoke test ──────────────────────────────────────────
+  docker-smoke:
+    name: Docker · Compose stack smoke test
+    runs-on: ubuntu-latest
+    needs: [test-backend, build-frontend]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create .env from example
+        run: |
+          cp .env.example .env
+          sed -i 's/change-me-use-a-long-random-string/ci-secret-key-abc123/' .env
+          sed -i 's/change-me-generate-a-secure-token/ci-ingest-key-xyz/' .env
+
+      - name: Build images
+        run: docker compose build
+
+      - name: Start stack
+        run: docker compose up -d db redis api
+
+      - name: Wait for API to be healthy
+        run: |
+          for i in $(seq 1 24); do
+            STATUS=$(docker compose ps api --format json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('Health',''))" 2>/dev/null || echo "")
+            if [ "$STATUS" = "healthy" ]; then
+              echo "API is healthy."
+              exit 0
+            fi
+            echo "Waiting... ($i/24)"
+            sleep 5
+          done
+          echo "API never became healthy."
+          docker compose logs api
+          exit 1
+
+      - name: Smoke test — GET /api/rates/latest returns 200
+        run: |
+          curl --fail --silent --show-error http://localhost:8000/api/rates/latest
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
+
+  # ── 5. Deploy (main branch only) ──────────────────────────────────────────
+  # Uncomment and configure for your target platform (Fly.io, Render, EC2…)
+  #
+  # deploy:
+  #   name: Deploy · Production
+  #   runs-on: ubuntu-latest
+  #   needs: docker-smoke
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Deploy to Fly.io
+  #       uses: superfly/flyctl-actions/setup-flyctl@master
+  #     - run: flyctl deploy --remote-only
+  #       env:
+  #         FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
