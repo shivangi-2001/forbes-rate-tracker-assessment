@@ -159,8 +159,8 @@ jobs:
       - name: Create .env from example
         run: |
           cp .env.example .env
-          sed -i 's/change-me-use-a-long-random-string/ci-secret-key-abc123/' .env
-          sed -i 's/change-me-generate-a-secure-token/ci-ingest-key-xyz/' .env
+          sed -i 's/va^iw2pvsrb1te2sc%jv7-i)p0k8qc^)an1(@^li4i&x6j+=nn/' .env
+          sed -i 's/Y-AeML8HAKHEEww5ECbdPvaRyTmiRJEHl3wLzK3Zax4/' .env
 
       - name: Build images
         run: docker compose build
