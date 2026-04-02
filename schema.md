@@ -47,7 +47,6 @@ ORDER BY provider_name, rate_type, effective_date DESC;
 
 `DISTINCT ON` requires the `ORDER BY` to lead with the same columns. This index makes that sort a index scan rather than a sequential scan + sort, which matters at ~1M rows.
 
-**Optional `?type=` filter** adds a leading equality predicate — PostgreSQL can use the same index with a partial skip.
 
 ---
 
@@ -104,7 +103,7 @@ In production with multiple years of data, I would consider a partial normalisat
 
 **Why `numeric(10,6)` for `rate_value`?**
 
-`float` (IEEE 754) loses precision for decimal fractions like `6.875`. A rate displayed as `6.875%` should store and retrieve as exactly `6.875000`, not `6.87499999...`. `numeric` is the correct type for financial values. The `(10, 6)` precision supports rates up to `9999.999999%` which covers any foreseeable interest rate.
+`float` loses precision for decimal fractions like `6.875`. A rate displayed as `6.875%` should store and retrieve as exactly `6.875000`, not `6.87499999...`. `numeric` is the correct type for financial values. The `(10, 6)` precision supports rates up to `9999.999999%` which covers any foreseeable interest rate.
 
 **Why not a time-series database (TimescaleDB, InfluxDB)?**
 
