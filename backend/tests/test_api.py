@@ -47,7 +47,7 @@ class TestLatestRates:
         )
         Rate.objects.create(
             provider_name="BankA", rate_type="mortgage_30yr",
-            size_value="6.9", effective_date="2024-06-01",
+            rate_value="6.9", effective_date="2024-06-01",
         )
         response = client.get("/api/rates/latest")
         data = response.json()
