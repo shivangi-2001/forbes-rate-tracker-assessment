@@ -170,6 +170,7 @@ ChatGpt:
 - for Next.js Debugging issue
 
 All generated code was reviewed, understood, and adapted. 
+
 Schema Design, idempotency strategy (upsert on unique constraint), index choices, cache invalidation approach, and DECISIONS.md reasoning are the author's own engineering decisions.
 
 ## Author
