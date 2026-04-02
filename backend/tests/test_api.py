@@ -16,24 +16,30 @@ def clear_cache():
  
  
 # ── /rates/latest ──────────────────────────────────────────────────────────────
- 
 class TestLatestRates:
     def test_returns_200_no_auth(self, client, sample_rate):
         response = client.get("/api/rates/latest")
         assert response.status_code == 200
- 
+
     def test_returns_list(self, client, sample_rate, another_rate):
         response = client.get("/api/rates/latest")
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) >= 2
- 
+        
+        # Check that we got the paginated dictionary
+        assert isinstance(data, dict)
+        assert "results" in data
+        assert isinstance(data["results"], list)
+        assert len(data["results"]) >= 2
+
     def test_filter_by_type(self, client, sample_rate, another_rate):
         response = client.get("/api/rates/latest?type=mortgage_30yr")
         data = response.json()
-        assert all(r["rate_type"] == "mortgage_30yr" for r in data)
- 
+        
+        # Iterate over the nested 'results' list
+        results = data["results"]
+        assert all(r["rate_type"] == "mortgage_30yr" for r in results)
+
     def test_latest_returns_most_recent(self, db, client):
         Rate.objects.create(
             provider_name="BankA", rate_type="mortgage_30yr",
@@ -41,15 +47,18 @@ class TestLatestRates:
         )
         Rate.objects.create(
             provider_name="BankA", rate_type="mortgage_30yr",
-            rate_value="6.9", effective_date="2024-06-01",
+            size_value="6.9", effective_date="2024-06-01",
         )
         response = client.get("/api/rates/latest")
         data = response.json()
-        bank_a_list = [r for r in data if r["provider_name"] == "BankA"]
-        assert len(bank_a_list) > 0, "BankA not found in response"
+        
+        # Look inside data["results"] for the actual objects
+        bank_a_list = [r for r in data["results"] if r["provider_name"] == "BankA"]
+        
+        assert len(bank_a_list) > 0, "BankA not found in response results"
         assert bank_a_list[0]["effective_date"] == "2024-06-01"
- 
- 
+        
+        
 # ── /rates/history ─────────────────────────────────────────────────────────────
  
 class TestRateHistory:

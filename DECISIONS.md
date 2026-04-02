@@ -39,7 +39,7 @@ Rate.objects.bulk_create(
 
 This compiles to a single `INSERT ... ON CONFLICT (provider_name, rate_type, effective_date) DO UPDATE SET ...` per batch. Running `seed_data` twice produces identical row counts — the second run is a no-op for valid rows.
 
-**2. Per-processing data value valiadtion handler.**
+**2. Per-processing data value validation handler.**
 
 Before batching, each row passes a validation gate inside `_process_chunk`:
 - Null or NaN `rate_value` → skip, log `WARNING`
@@ -75,7 +75,7 @@ Within a 48-hour window, WebSockets would consume roughly 20% of total available
 
 **Cache invalidation strategy for `/rates/latest`.**
 
-I use a 5-minute TTL as the primary mechanism, with explicit `cache.delete(key)` calls in the `POST /rates/ingest` view as a secondary mechanism. This means:
+I use a 5-minute `TTL` with `cache-asides` strategy as the primary mechanism, with explicit `cache.delete(key)` calls in the `POST /rates/ingest` view as a secondary mechanism. This means:
 
 - Stale reads are bounded to 5 minutes in the worst case
 - A webhook POST immediately busts the cache for that rate type, so the next GET sees fresh data within milliseconds

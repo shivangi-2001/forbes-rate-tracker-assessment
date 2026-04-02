@@ -7,9 +7,12 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from .models import Rate
 from .serializers import RateIngestSerializer, RateSerializer
+
 
 logger = logging.getLogger("rates")
 
@@ -21,79 +24,62 @@ def _latest_cache_key(rate_type=None):
     return LATEST_CACHE_KEY.format(rate_type=rate_type or "all")
 
 
+
+class RatePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+    def get_paginated_response(self, data):
+        """
+        Customized to match your desired response structure 
+        while adding standard 'next' and 'previous' links.
+        """
+        return Response({
+            'count': self.page.paginator.count,
+            'total_pages': self.page.paginator.num_pages,
+            'current_page': self.page.number,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'results': data
+        })
+        
 class LatestRatesView(APIView):
     permission_classes = [AllowAny]
-
-    DEFAULT_PAGE_SIZE = 10
-    MAX_PAGE_SIZE = 100
+    pagination_class = RatePagination
 
     def get(self, request):
         rate_type = request.query_params.get("type")
-
-        # Pagination params — only cache unpaginated requests
-        try:
-            page = max(1, int(request.query_params.get("page", 1)))
-        except (ValueError, TypeError):
-            page = 1
-        try:
-            page_size = min(
-                self.MAX_PAGE_SIZE,
-                max(1, int(request.query_params.get("page_size", self.DEFAULT_PAGE_SIZE))),
-            )
-        except (ValueError, TypeError):
-            page_size = self.DEFAULT_PAGE_SIZE
-
-        is_paginated = "page" in request.query_params or "page_size" in request.query_params
-
-        # Only use cache for unpaginated requests (page 1, default size)
+        
+        # Determine if this is a default, unpaginated request for caching
+        is_default_request = not any(k in request.query_params for k in ["page", "page_size"])
         cache_key = _latest_cache_key(rate_type)
-        if not is_paginated:
+
+        if is_default_request:
             cached = cache.get(cache_key)
-            if cached is not None:
-                logger.info("Cache hit", extra={"cache_key": cache_key})
+            if cached:
                 return Response(cached)
 
-        t0 = time.monotonic()
-        qs = Rate.objects.all()
+        # Query Logic
+        qs = Rate.objects.all().order_by("provider_name", "rate_type", "-effective_date")
         if rate_type:
             qs = qs.filter(rate_type=rate_type)
+        
+        # PostgreSQL distinct optimization
+        qs = qs.distinct("provider_name", "rate_type")
 
-        # Latest rate per (provider, type) using distinct on effective_date desc
-        qs = qs.order_by("provider_name", "rate_type", "-effective_date").distinct(
-            "provider_name", "rate_type"
-        )
+        # Execute Pagination
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(qs, request)
+        
+        serializer = RateSerializer(page, many=True)
+        response_obj = paginator.get_paginated_response(serializer.data)
 
-        elapsed_ms = (time.monotonic() - t0) * 1000
-        if elapsed_ms > 200:
-            logger.warning(
-                "Slow query on /rates/latest",
-                extra={"elapsed_ms": round(elapsed_ms, 2)},
-            )
+        # Cache only the result of the default request
+        if is_default_request:
+            cache.set(cache_key, response_obj.data, LATEST_CACHE_TTL)
 
-        # Apply pagination
-        total_count = qs.count()
-        total_pages = max(1, (total_count + page_size - 1) // page_size)
-        page = min(page, total_pages)
-        offset = (page - 1) * page_size
-        page_qs = qs[offset: offset + page_size]
-
-        data = RateSerializer(page_qs, many=True).data
-
-        response_data = {
-            "count": total_count,
-            "total_pages": total_pages,
-            "page": page,
-            "page_size": page_size,
-            "results": data,
-        }
-
-        # Cache only the first page / unpaginated response
-        if not is_paginated:
-            cache.set(cache_key, response_data, LATEST_CACHE_TTL)
-            logger.info("Cache miss — stored", extra={"cache_key": cache_key})
-
-        return Response(response_data)
-
+        return response_obj
 
 class RateHistoryView(APIView):
     permission_classes = [AllowAny]

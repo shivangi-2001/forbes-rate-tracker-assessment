@@ -100,11 +100,13 @@ Body:
   "provider_name": "Chase",
   "rate_type": "mortgage_30yr",
   "rate_value": "6.875",
-  "effective_date": "2024-07-01"
+  "effective_date": "2024-07-01",
+  "ingestion_timestamp": ... ,
+  "raw_payload": ...,
 }
 ```
 
-Returns `201 Created` on insert, `200 OK` on update (same provider + type + date).
+Returns `201 Created` on insert, `200 OK` on update UNIQUE constraint (same provider + type + date).
 
 ---
 
