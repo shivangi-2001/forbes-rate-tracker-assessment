@@ -159,8 +159,8 @@ jobs:
       - name: Create .env from example
         run: |
           cp .env.example .env
-          sed -i 's/va^iw2pvsrb1te2sc%jv7-i)p0k8qc^)an1(@^li4i&x6j+=nn/' .env
-          sed -i 's/Y-AeML8HAKHEEww5ECbdPvaRyTmiRJEHl3wLzK3Zax4/' .env
+          sed -i "s|SECRET_KEY=.*|SECRET_KEY=your_secret_value|" .env
+          sed -i "s|INGEST_API_KEY=.*|INGEST_API_KEY=your_api_key|" .env
 
       - name: Build images
         run: docker compose build
