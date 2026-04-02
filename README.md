@@ -4,6 +4,12 @@ A production-shaped full-stack application that scrapes, stores, exposes, and vi
 
 **Stack:** Django · PostgreSQL · Redis · Celery · Next.js · Docker Compose
 
+**video link** 
+```
+https://drive.google.com/drive/folders/1TTuUF2U4-PiaUnCFqO6kkURedrkLU7Hm?usp=sharing
+
+```
+
 ---
 
 ## Prerequisites
@@ -168,6 +174,8 @@ Warp Terminal:
 
 ChatGpt:
 - for Next.js Debugging issue
+
+Cursor for IDE
 
 All generated code was reviewed, understood, and adapted. 
 
